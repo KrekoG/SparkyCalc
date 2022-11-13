@@ -26,10 +26,13 @@
           <div class="container-lg">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
               <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="lum-pos-tab" data-bs-toggle="tab" data-bs-target="#menu-position" type="button" role="tab" aria-controls="home" aria-selected="true">Position</button>
+                <button class="nav-link active" id="lum-pos-tab" data-bs-toggle="tab" data-bs-target="#menu-position" type="button" role="tab" aria-controls="position" aria-selected="true">Position</button>
               </li>
               <li class="nav-item" role="presentation">
-                <button class="nav-link" id="thickness-tab" data-bs-toggle="tab" data-bs-target="#menu-csa" type="button" role="tab" aria-controls="profile" aria-selected="false">CSA</button>
+                <button class="nav-link" id="csa-tab" data-bs-toggle="tab" data-bs-target="#menu-csa" type="button" role="tab" aria-controls="CSA" aria-selected="false">CSA</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="r-tab" data-bs-toggle="tab" data-bs-target="#menu-r" type="button" role="tab" aria-controls="R" aria-selected="false">R</button>
               </li>
             </ul>
 
@@ -103,7 +106,7 @@
 
               <div class="tab-pane fade" id="menu-csa" role="tabpanel" aria-labelledby="menu-csa-tab">
                 <div class="container-lg px-4 border bg-light">
-                  <h1><abbr title="Cross-Sectional Area">CSA</abbr> calculator</h1>
+                  <h1>CSA calculator</h1>
 
                   <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -134,23 +137,79 @@
                     <div class="tab-pane fade" id="addition" role="tabpanel" aria-labelledby="addition-tab">
                       <h4>Addition</h4>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="firstThickness" class="form-control" placeholder="CSA in mm<sup>2</sup>">
+                        <input id="fullLength" type="number" v-model="firstCSA" class="form-control" placeholder="CSA in mm<sup>2</sup>">
                         <label for="fullLength">CSA in mm<sup>2</sup></label>
                       </div>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="secondThickness" default="1" class="form-control" placeholder="CSA in mm<sup>2</sup>">
+                        <input id="fullLength" type="number" v-model="secondCSA" default="1" class="form-control" placeholder="CSA in mm<sup>2</sup>">
                         <label for="fullLength">CSA in mm<sup>2</sup></label>
                       </div>
-                      <div v-if="firstThickness && secondThickness">
+                      <div v-if="firstCSA && secondCSA">
                         <h2>Effective CSA:</h2>
                         <ul class="list-group text-center">
-                          <li class="list-group-item">{{Math.round(Math.sqrt((Math.pow(firstThickness, 2) + Math.pow(secondThickness, 2))) * 1000) / 1000}} mm<sup>2</sup></li>
+                          <li class="list-group-item">{{Math.round(Math.sqrt((Math.pow(firstCSA, 2) + Math.pow(secondCSA, 2))) * 1000) / 1000}} mm<sup>2</sup></li>
                         </ul>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <div class="tab-pane fade" id="menu-r" role="tabpanel" aria-labelledby="menu-r">
+                <div class="container-lg px-4 border bg-light">
+                  <h1>Resistance</h1>
+
+                    <div class="tab-pane fade show active" id="diameter" role="tabpanel" aria-labelledby="diameter-tab">
+                      <h4>From length</h4>
+                      <p>Based on the values found in On-site Guide to BS 7671:2018, Appendix 1, resistance of copper and aluminium conductors (page 195).
+
+                      <div class="form-floating">
+                        <input v-model="rTemperature" id="rTemperature" type="number" class="form-control" placeholder="Cable rating">
+                        <label for="rTemperature">Temperature</label>
+                      </div>
+                      <div class="form-floating">
+                        <select @change="rReset()" v-model="rMaterial" class="form-select" aria-label="Default select example">
+                          <option value="copper" selected>Copper</option>
+                          <option value="aluminium">Aluminium</option>
+                        </select>
+                        <label for="lineconductor">Conductor material</label>
+                      </div>
+
+                      <div class="form-floating">
+                        <select v-model="rLineConductorCSA" :disabled="rMaterial ? false : true" class="form-select" aria-label="Default select example">
+                          <option v-if="rMaterial" v-for="(csa, key) in this.rOptionsLineConductorCSA(rMaterial)">
+                            {{csa}}
+                          </option>
+                        </select>
+                        <label for="lineconductor">Line conductor CSA in mm<sup>2</sup></label>
+                      </div>
+
+                      <div class="form-floating">
+                        <select v-model="rCircuitProtectiveConductorCSA" :disabled="!!rLineConductorCSA ? false : true" class="form-select" aria-label="Default select example">
+                          <option v-if="rLineConductorCSA" v-for="(csa, key) in rOptionsCircuitProtectiveConductorCSA(rMaterial,rLineConductorCSA)" :selected="csa == '-'? true : false">
+                            {{csa}}
+                          </option>
+                        </select>
+                        <label for="lineconductor">CPC CSA in mm<sup>2</sup></label>
+                      </div>
+
+                      <div class="form-floating">
+                        <input v-model="rCircuitLength"  id="rCircuitLength" type="number" default="1" class="form-control" placeholder="Circuit Length">
+                        <label for="rCircuitLength">Circuit length in m</label>
+                      </div>
+
+                      <div v-if="!!rMaterial && !!rLineConductorCSA && !!rCircuitProtectiveConductorCSA && !!rCircuitLength && !!rTemperature">
+                        <h2>Expected Resistance:</h2>
+                        <ul class="list-group text-center">
+                          <li class="list-group-item">{{Math.round(rResistancePerMeter * rCircuitLength * (1 + 0.004 * (rTemperature - 20))) / 1000}} &#8486;</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
           `,
@@ -162,10 +221,18 @@
             offsetFromRight:null,
             forcedLeft:null,
             forcedRight:null,
+
             diameter:null,
             numberOfStrands:1,
-            firstThickness:null,
-            secondThickness:null
+            firstCSA:null,
+            secondCSA:null,
+
+            RESISTANCE_PER_METER_TABLE:null,
+            rMaterial:"copper",
+            rLineConductorCSA:null,
+            rCircuitProtectiveConductorCSA:null,
+            rCircuitLength:null,
+            rTemperature:20,
           }
         },
         computed: {
@@ -253,7 +320,128 @@
               })
             }
             return distanceList;
+          },
+          rResistancePerMeter: function () {
+            if (!!this.rMaterial && !!this.rLineConductorCSA && !!this.rCircuitProtectiveConductorCSA && !!this.rCircuitLength && !!this.rTemperature)
+              return this.RESISTANCE_PER_METER_TABLE[this.rMaterial][this.rLineConductorCSA][this.rCircuitProtectiveConductorCSA];
+            else
+              return "-";
           }
+        },
+        methods: {
+          rOptionsLineConductorCSA: function (material) {
+            if (this.RESISTANCE_PER_METER_TABLE[material]) {
+              let keys = Object.keys(this.RESISTANCE_PER_METER_TABLE[material]);
+              return keys.sort(function(a, b){return a - b});
+            }
+
+            return [];
+          },
+          rOptionsCircuitProtectiveConductorCSA: function (material, lineConductorCSA) {
+            if (this.RESISTANCE_PER_METER_TABLE[material][lineConductorCSA]) {
+              let keys = Object.keys(this.RESISTANCE_PER_METER_TABLE[material][lineConductorCSA]);
+              return keys.sort(function(a, b) {
+                  if (b === '-') {
+                    return 1;
+                  } else if(a === '-') {
+                    return -1;
+                  }
+                  return a - b;
+                }
+              );
+            }
+
+            return [];
+          },
+          rReset: function() {
+            this.rLineConductorCSA = null;
+            this.rCircuitProtectiveConductorCSA = null;
+          }
+        },
+        beforeMount: function () {
+          this.RESISTANCE_PER_METER_TABLE = {
+            'aluminium': {
+              '16': {
+                '-' : 1.91,
+                '16': 3.81
+              },
+              '25': {
+                '-' : 1.2,
+                '25': 2.40
+              },
+              '35': {
+                '-' : 0.87,
+                '16': 2.78,
+                '25': 2.07,
+                '35': 1.74
+              },
+              '50': {
+                '-': 0.65,
+                '25': 1.84,
+                '35': 1.51,
+                '50': 1.28
+              }
+            },
+            'copper': {
+              '1': {
+                '-': 18.10,
+                '1': 36.20
+              },
+              '1.5': {
+                '-': 12.10,
+                '1': 30.20,
+                '1.5': 24.20
+              },
+              '2.5': {
+                '-': 7.41,
+                '1': 25.51,
+                '1.5': 19.51,
+                '2.5': 14.82
+              },
+              '4': {
+                '-': 4.61,
+                '1.5': 16.71,
+                '2.5': 12.02,
+                '4': 9.22
+              },
+              '6': {
+                '-': 3.08,
+                '2.5': 10.49,
+                '4': 7.69,
+                '6': 6.16
+              },
+              '10': {
+                '-': 1.83,
+                '4': 6.44,
+                '6': 4.91,
+                '10': 3.66
+              },
+              '16': {
+                '-': 1.15,
+                '6': 4.23,
+                '10': 2.98,
+                '16': 2.30
+              },
+              '25': {
+                '-': 0.727,
+                '10': 2.557,
+                '16': 1.877,
+                '25': 1.454
+              },
+              '35': {
+                '-': 0.524,
+                '16': 1.674,
+                '25': 1.251,
+                '35': 1.048
+              },
+              '50': {
+                '-': 0.387,
+                '25': 1.114,
+                '35': 0.911,
+                '50': 0.774
+              }
+            }
+          };
         }
       };
 
@@ -268,7 +456,6 @@
       // register your components
       Vue.component('calculator', calculator);
       Vue.component('app', app);
-
 
       // launch your Vue app
       new Vue({
