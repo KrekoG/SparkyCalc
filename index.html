@@ -167,8 +167,8 @@
                     <div class="tab-pane fade show active" id="diameter" role="tabpanel" aria-labelledby="diameter-tab">
                       <p>Based on the values found in On-site Guide to BS 7671:2018, Appendix I, resistance of copper and aluminium conductors (page 195).
                       <div class="form-floating">
-                        <input v-model="rTemperature" id="rTemperature" type="number" class="form-control" placeholder="Cable rating">
-                        <label for="rTemperature">Temperature</label>
+                        <input v-model="rTemperature" id="rTemperature" type="number" class="form-control" placeholder="Temperature in C">
+                        <label for="rTemperature">Temperature in C</label>
                       </div>
                       <div class="form-floating">
                         <select @change="rReset()" v-model="rMaterial" class="form-select" aria-label="Default select example">
