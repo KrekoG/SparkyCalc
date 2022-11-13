@@ -116,41 +116,47 @@
                       <button class="nav-link" id="pills-addition-tab" data-bs-toggle="pill" data-bs-target="#addition" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Addition</button>
                     </li>
                   </ul>
+
                   <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="diameter" role="tabpanel" aria-labelledby="diameter-tab">
                       <h4>From diameter</h4>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="numberOfStrands" default="1" class="form-control" placeholder="Number of strands">
+                        <input id="fullLength" type="number" v-model="csaNumberOfStrands" default="1" class="form-control" placeholder="Number of strands">
                         <label for="fullLength">Number of strands</label>
                       </div>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="diameter" class="form-control" placeholder="Strand Diameter in mm">
+                        <input id="fullLength" type="number" v-model="csaDiameter" class="form-control" placeholder="Strand Diameter in mm">
                         <label for="fullLength">Strand Diameter in mm</label>
                       </div>
-                      <div v-if="diameter && numberOfStrands">
+                      <div v-if="csaDiameter && csaNumberOfStrands">
                         <h2>Effective CSA:</h2>
                         <ul class="list-group text-center">
-                          <li class="list-group-item">{{Math.round(Math.PI * Math.pow((diameter * 1.0) / 2, 2) * numberOfStrands * 1000) / 1000}} mm<sup>2</sup></li>
+                          <li class="list-group-item">{{Math.round(Math.PI * Math.pow((csaDiameter * 1.0) / 2, 2) * csaNumberOfStrands * 1000) / 1000}} mm<sup>2</sup></li>
                         </ul>
                       </div>
                     </div>
+
                     <div class="tab-pane fade" id="addition" role="tabpanel" aria-labelledby="addition-tab">
                       <h4>Addition</h4>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="firstCSA" class="form-control" placeholder="CSA in mm<sup>2</sup>">
+                        <input id="fullLength" type="number" v-model="csaFirstCSA" class="form-control" placeholder="CSA in mm<sup>2</sup>">
                         <label for="fullLength">CSA in mm<sup>2</sup></label>
                       </div>
                       <div class="form-floating">
-                        <input id="fullLength" type="number" v-model="secondCSA" default="1" class="form-control" placeholder="CSA in mm<sup>2</sup>">
+                        <input id="fullLength" type="number" v-model="csaSecondCSA" default="1" class="form-control" placeholder="CSA in mm<sup>2</sup>">
                         <label for="fullLength">CSA in mm<sup>2</sup></label>
                       </div>
-                      <div v-if="firstCSA && secondCSA">
+                      <div v-if="csaFirstCSA && csaSecondCSA">
                         <h2>Effective CSA:</h2>
                         <ul class="list-group text-center">
-                          <li class="list-group-item">{{Math.round(Math.sqrt((Math.pow(firstCSA, 2) + Math.pow(secondCSA, 2))) * 1000) / 1000}} mm<sup>2</sup></li>
+                          <li class="list-group-item">{{csaAdditionResult}} mm<sup>2</sup></li>
                         </ul>
+                        <div class="d-grid gap-2">
+                          <button @click="csaAddMore()" class="btn btn-primary" type="button">Add more</button>
+                        </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -158,11 +164,9 @@
               <div class="tab-pane fade" id="menu-r" role="tabpanel" aria-labelledby="menu-r">
                 <div class="container-lg px-4 border bg-light">
                   <h1>Resistance</h1>
-
                     <div class="tab-pane fade show active" id="diameter" role="tabpanel" aria-labelledby="diameter-tab">
                       <h4>From length</h4>
                       <p>Based on the values found in On-site Guide to BS 7671:2018, Appendix 1, resistance of copper and aluminium conductors (page 195).
-
                       <div class="form-floating">
                         <input v-model="rTemperature" id="rTemperature" type="number" class="form-control" placeholder="Cable rating">
                         <label for="rTemperature">Temperature</label>
@@ -174,7 +178,6 @@
                         </select>
                         <label for="lineconductor">Conductor material</label>
                       </div>
-
                       <div class="form-floating">
                         <select v-model="rLineConductorCSA" :disabled="rMaterial ? false : true" class="form-select" aria-label="Default select example">
                           <option v-if="rMaterial" v-for="(csa, key) in this.rOptionsLineConductorCSA(rMaterial)">
@@ -183,7 +186,6 @@
                         </select>
                         <label for="lineconductor">Line conductor CSA in mm<sup>2</sup></label>
                       </div>
-
                       <div class="form-floating">
                         <select v-model="rCircuitProtectiveConductorCSA" :disabled="!!rLineConductorCSA ? false : true" class="form-select" aria-label="Default select example">
                           <option v-if="rLineConductorCSA" v-for="(csa, key) in rOptionsCircuitProtectiveConductorCSA(rMaterial,rLineConductorCSA)" :selected="csa == '-'? true : false">
@@ -192,12 +194,10 @@
                         </select>
                         <label for="lineconductor">CPC CSA in mm<sup>2</sup></label>
                       </div>
-
                       <div class="form-floating">
                         <input v-model="rCircuitLength"  id="rCircuitLength" type="number" default="1" class="form-control" placeholder="Circuit Length">
                         <label for="rCircuitLength">Circuit length in m</label>
                       </div>
-
                       <div v-if="!!rMaterial && !!rLineConductorCSA && !!rCircuitProtectiveConductorCSA && !!rCircuitLength && !!rTemperature">
                         <h2>Expected Resistance:</h2>
                         <ul class="list-group text-center">
@@ -205,7 +205,6 @@
                         </ul>
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -222,10 +221,10 @@
             forcedLeft:null,
             forcedRight:null,
 
-            diameter:null,
-            numberOfStrands:1,
-            firstCSA:null,
-            secondCSA:null,
+            csaDiameter:null,
+            csaNumberOfStrands:1,
+            csaFirstCSA:null,
+            csaSecondCSA:null,
 
             RESISTANCE_PER_METER_TABLE:null,
             rMaterial:"copper",
@@ -321,14 +320,24 @@
             }
             return distanceList;
           },
+          csaAdditionResult: function () {
+            if (this.csaFirstCSA && this.csaSecondCSA) {
+              return Math.round(Math.sqrt((Math.pow(this.csaFirstCSA, 2) + Math.pow(this.csaSecondCSA, 2))) * 1000) / 1000
+            }
+            return '-'
+          },
           rResistancePerMeter: function () {
             if (!!this.rMaterial && !!this.rLineConductorCSA && !!this.rCircuitProtectiveConductorCSA && !!this.rCircuitLength && !!this.rTemperature)
               return this.RESISTANCE_PER_METER_TABLE[this.rMaterial][this.rLineConductorCSA][this.rCircuitProtectiveConductorCSA];
             else
-              return "-";
+              return '-';
           }
         },
         methods: {
+          csaAddMore: function() {
+            this.csaFirstCSA = this.csaAdditionResult;
+            this.csaSecondCSA = null;
+          },
           rOptionsLineConductorCSA: function (material) {
             if (this.RESISTANCE_PER_METER_TABLE[material]) {
               let keys = Object.keys(this.RESISTANCE_PER_METER_TABLE[material]);
