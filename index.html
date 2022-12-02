@@ -164,14 +164,25 @@
               <div class="tab-pane fade" id="menu-r" role="tabpanel" aria-labelledby="menu-r">
                 <div class="container-lg px-4 border bg-light">
                   <h1>Resistance</h1>
-                    <div class="tab-pane fade show active" id="diameter" role="tabpanel" aria-labelledby="diameter-tab">
+
+                  <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="pills-diameter-tab" data-bs-toggle="pill" data-bs-target="#roneplusrtwo" type="button" role="tab" aria-controls="pills-home" aria-selected="true">R<sub>1</sub>+R<sub>2</sub></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="pills-addition-tab" data-bs-toggle="pill" data-bs-target="#rcpc" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Expected CPC Resistance</button>
+                    </li>
+                  </ul>
+
+                  <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="roneplusrtwo" role="tabpanel" aria-labelledby="diameter-tab">
                       <p>Based on the values found in On-site Guide to BS 7671:2018, Appendix I, resistance of copper and aluminium conductors (page 195).
                       <div class="form-floating">
                         <input v-model="rTemperature" id="rTemperature" type="number" class="form-control" placeholder="Temperature in C">
                         <label for="rTemperature">Temperature in C</label>
                       </div>
                       <div class="form-floating">
-                        <select @change="rReset()" v-model="rMaterial" class="form-select" aria-label="Default select example">
+                        <select @change="rROneAndRTwoReset()" v-model="rMaterial" class="form-select" aria-label="Default select example">
                           <option value="copper" selected>Copper</option>
                           <option value="aluminium">Aluminium</option>
                         </select>
@@ -204,7 +215,45 @@
                         </ul>
                       </div>
                     </div>
+
+                    <div class="tab-pane fade" id="rcpc" role="tabpanel" aria-labelledby="diameter-tab">
+                      <p>Based on the values found in On-site Guide to BS 7671:2018, Appendix I, resistance of copper and aluminium conductors (page 195).
+                      <div class="form-floating">
+                        <select @change="rCPCReset()" v-model="rCPCMaterial" class="form-select" aria-label="Default select example">
+                          <option value="copper" selected>Copper</option>
+                          <option value="aluminium">Aluminium</option>
+                        </select>
+                        <label for="lineconductor">Conductor material</label>
+                      </div>
+                      <div class="form-floating">
+                        <select v-model="rCPCLineConductorCSA" :disabled="rCPCMaterial ? false : true" class="form-select" aria-label="Default select example">
+                          <option v-if="rCPCMaterial" v-for="(csa, key) in this.rOptionsLineConductorCSA(rCPCMaterial)">
+                            {{csa}}
+                          </option>
+                        </select>
+                        <label for="lineconductor">Line conductor CSA in mm<sup>2</sup></label>
+                      </div>
+                      <div class="form-floating">
+                        <select v-model="rCPCCircuitProtectiveConductorCSA" :disabled="!!rCPCLineConductorCSA ? false : true" class="form-select" aria-label="Default select example">
+                          <option v-if="rCPCLineConductorCSA" v-for="(csa, key) in rOptionsCircuitProtectiveConductorCSA(rCPCMaterial,rCPCLineConductorCSA)">
+                            {{csa}}
+                          </option>
+                        </select>
+                        <label for="lineconductor">CPC CSA in mm<sup>2</sup></label>
+                      </div>
+                      <div class="form-floating">
+                        <input v-model="rMeasuredR"  id="rMeasuredR" type="number" default="" class="form-control" placeholder="Measured line resistance">
+                        <label for="rCircuitLength">Measured line resistance in &#8486;</label>
+                      </div>
+                      <div v-if="!!rCPCMaterial && !!rCPCLineConductorCSA && !!rCPCCircuitProtectiveConductorCSA && !!rMeasuredR">
+                        <h2>Expected Resistance:</h2>
+                        <ul class="list-group text-center">
+                          <li class="list-group-item">{{Math.round((rCPCCPCResistancePerMeter / rCPCLineResistancePerMeter) * rMeasuredR * 1000) / 1000}} &#8486;</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
+
                 </div>
               </div>
 
@@ -231,6 +280,11 @@
             rCircuitProtectiveConductorCSA:null,
             rCircuitLength:null,
             rTemperature:20,
+
+            rCPCMaterial:"copper",
+            rCPCLineConductorCSA:null,
+            rCPCCircuitProtectiveConductorCSA:null,
+            rMeasuredR:null
           }
         },
         computed: {
@@ -330,7 +384,19 @@
               return this.RESISTANCE_PER_METER_TABLE[this.rMaterial][this.rLineConductorCSA][this.rCircuitProtectiveConductorCSA];
             else
               return '-';
-          }
+          },
+          rCPCLineResistancePerMeter: function () {
+            if (!!this.rCPCMaterial && !!this.rCPCLineConductorCSA && !!this.rCPCCircuitProtectiveConductorCSA && !!this.rMeasuredR)
+              return this.RESISTANCE_PER_METER_TABLE[this.rCPCMaterial][this.rCPCLineConductorCSA]['-'];
+            else
+              return '-';
+          },
+          rCPCCPCResistancePerMeter: function () {
+            if (!!this.rCPCMaterial && !!this.rCPCLineConductorCSA && !!this.rCPCCircuitProtectiveConductorCSA && !!this.rMeasuredR)
+              return this.RESISTANCE_PER_METER_TABLE[this.rCPCMaterial][this.rCPCCircuitProtectiveConductorCSA]['-'];
+            else
+              return '-';
+          },
         },
         methods: {
           csaAddMore: function() {
@@ -361,7 +427,11 @@
 
             return [];
           },
-          rReset: function() {
+          rROneAndRTwoReset: function() {
+            this.rLineConductorCSA = null;
+            this.rCircuitProtectiveConductorCSA = null;
+          },
+          rCPCReset: function() {
             this.rLineConductorCSA = null;
             this.rCircuitProtectiveConductorCSA = null;
           }
