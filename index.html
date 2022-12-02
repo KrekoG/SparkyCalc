@@ -235,7 +235,7 @@
                       </div>
                       <div class="form-floating">
                         <select v-model="rCPCCircuitProtectiveConductorCSA" :disabled="!!rCPCLineConductorCSA ? false : true" class="form-select" aria-label="Default select example">
-                          <option v-if="rCPCLineConductorCSA" v-for="(csa, key) in rOptionsCircuitProtectiveConductorCSA(rCPCMaterial,rCPCLineConductorCSA)">
+                          <option v-if="rCPCLineConductorCSA" v-for="(csa, key) in rCPCOptionsCircuitProtectiveConductorCSA(rCPCMaterial,rCPCLineConductorCSA)">
                             {{csa}}
                           </option>
                         </select>
@@ -423,6 +423,16 @@
                   return a - b;
                 }
               );
+            }
+
+            return [];
+          },
+          rCPCOptionsCircuitProtectiveConductorCSA: function (material, lineConductorCSA) {
+            if (this.RESISTANCE_PER_METER_TABLE[material][lineConductorCSA]) {
+              let keys = Object.keys(this.RESISTANCE_PER_METER_TABLE[material][lineConductorCSA]);
+              return keys.filter(function(a) {
+                return a !== '-';
+              }).sort();
             }
 
             return [];
