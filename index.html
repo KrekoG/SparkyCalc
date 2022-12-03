@@ -284,6 +284,9 @@
                     <li class="nav-item" role="presentation">
                       <button class="nav-link" id="pills-weigth" data-bs-toggle="pill" data-bs-target="#ucweigth" type="button" role="tab" aria-controls="pills-weigth" aria-selected="false">Weigth</button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="pills-energy" data-bs-toggle="pill" data-bs-target="#ucenergy" type="button" role="tab" aria-controls="pills-weigth" aria-selected="false">Energy</button>
+                    </li>
                   </ul>
 
                   <div class="tab-content" id="pills-tabContent">
@@ -293,11 +296,19 @@
                         <label>{{name}} ({{props.symbol}})</label>
                       </div>
                     </div>
-                    <div class="tab-pane fade" id="ucweigth" role="tabpanel" aria-labelledby="diameter-tab">
+                    <div class="tab-pane fade" id="ucweigth" role="tabpanel" aria-labelledby="weigth-tab">
                       <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_WEIGTH">
                         <input @keyup="ucConvertWeigth(name, props.fromGram)" v-model="ucUnits.weigth[name]" type="number" class="form-control">
                         <label>{{name}} ({{props.symbol}})</label>
                       </div>
+                    </div>
+                    <div class="tab-pane fade" id="ucenergy" role="tabpanel" aria-labelledby="energy-tab">
+                      <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_ENERGY">
+                        <input @keyup="ucConvertEnergy(name, props.fromJoule)" v-model="ucUnits.energy[name]" type="number" class="form-control">
+                        <label>{{name}} ({{props.symbol}})</label>
+                      </div>
+                      <p>(IT) = International Table<br>
+                      (th) = Thermochemical</p>
                     </div>
                   </div>
 
@@ -335,7 +346,8 @@
 
             ucUnits:{
               distance: {},
-              weigth:{}
+              weigth: {},
+              energy: {}
             }
           }
         },
@@ -508,11 +520,21 @@
             this.$forceUpdate();
           },
           ucConvertWeigth: function(input, convertToGram) {
-            let inMeter = this.ucUnits.weigth[input] * convertToGram;
+            let inGram = this.ucUnits.weigth[input] * convertToGram;
 
             Object.entries(this.ucUnits.weigth).forEach(entry => {
               let [key, value] = entry;
-              this.ucUnits.weigth[key] = inMeter / this.CONVERSION_TABLE_WEIGTH[key].fromGram;
+              this.ucUnits.weigth[key] = inGram / this.CONVERSION_TABLE_WEIGTH[key].fromGram;
+            });
+
+            this.$forceUpdate();
+          },
+          ucConvertEnergy: function(input, convertToJoule) {
+            let inJoule = this.ucUnits.energy[input] * convertToJoule;
+
+            Object.entries(this.ucUnits.energy).forEach(entry => {
+              let [key, value] = entry;
+              this.ucUnits.energy[key] = inJoule / this.CONVERSION_TABLE_ENERGY[key].fromJoule;
             });
 
             this.$forceUpdate();
@@ -574,6 +596,52 @@
           Object.entries(this.CONVERSION_TABLE_WEIGTH).forEach(entry => {
             let [key, value] = entry;
             this.ucUnits.weigth[key] = null;
+          });
+          this.CONVERSION_TABLE_ENERGY = {
+            "joule / watt-second": {
+              symbol: "J or WS",
+              fromJoule: 1
+            },
+            "watt-hour": {
+              symbol: "Wh",
+              fromJoule: 3600
+            },
+            "kilowatt-hour": {
+              symbol: "kWh",
+              fromJoule: 3600000
+            },
+            "British thermal unit [IT]": {
+              symbol: "BTU-IT",
+              fromJoule: 1055.056
+            },
+            "British thermal unit [th]": {
+              symbol: "BTU-th",
+              fromJoule: 1054.35
+            },
+            "British thermal unit [mean]": {
+              symbol: "BTU-mean",
+              fromJoule: 1055.87
+            },
+            "kilocalorie [IT]": {
+              symbol: "kcal-IT",
+              fromJoule: 4186.8
+            },
+            "kilocalorie [th]": {
+              symbol: "kcal-th",
+              fromJoule: 4184
+            },
+            "kilocalorie [mean]": {
+              symbol: "kcal-mean",
+              fromJoule: 4190.02
+            },
+            "ton of TNT equivalent": {
+              symbol: "tTNT",
+              fromJoule: 4184000000
+            }
+          };
+          Object.entries(this.CONVERSION_TABLE_ENERGY).forEach(entry => {
+            let [key, value] = entry;
+            this.ucUnits.energy[key] = null;
           });
           this.RESISTANCE_PER_METER_TABLE = {
             'aluminium': {
