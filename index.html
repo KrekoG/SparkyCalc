@@ -83,20 +83,20 @@
                       <li class="list-group-item">|--<span v-for="distance in distanceList">{{Math.round((distance.distance + Number.EPSILON) * 100) / 100}} {{lumUnit}}<span v-if="distance.index != Object.keys(distanceList).length">--⮾--</span></span>--|</li>
                     </ul>
                     <div v-if="offsetFromLeft < 1 && offsetFromRight < 1 && !forcedLeft && !forcedRight">
-                      <h4>Luminaire positions with laser measuring tool</h4>
+                      <h4>Luminaire positions with a laser a measuring tool</h4>
                       <ul v-for="position in positions" class="list-group">
                         <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                       </ul>
                     </div>
                     <div v-else>
                       <div>
-                        <h4>Luminaire positions with laser measuring tool from the left</h4>
+                        <h4>Luminaire positions with a laser measuring tool from the left</h4>
                         <ul v-for="position in positions" class="list-group">
                           <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                         </ul>
                       </div>
                       <div>
-                        <h4>Luminaire positions with laser measuring tool from the right:</h4>
+                        <h4>Luminaire positions with a laser measuring tool from the right:</h4>
                         <ul v-for="position in positionsFromTheRight" class="list-group">
                           <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                         </ul>
