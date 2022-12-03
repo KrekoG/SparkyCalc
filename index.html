@@ -277,9 +277,28 @@
                 <div class="container-lg px-4 border bg-light">
                   <h1>Unit conversion</h1>
 
-                  <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_DISTANCE">
-                    <input @keyup="ucConvertDistance(name, props.fromMeter)" v-model="ucUnits.distance[name]" type="number" class="form-control">
-                    <label for="rCircuitLength">{{name}} ({{props.symbol}})</label>
+                  <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="pills-distance" data-bs-toggle="pill" data-bs-target="#ucdistance" type="button" role="tab" aria-controls="pills-distance" aria-selected="true">Distance</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="pills-weigth" data-bs-toggle="pill" data-bs-target="#ucweigth" type="button" role="tab" aria-controls="pills-weigth" aria-selected="false">Weigth</button>
+                    </li>
+                  </ul>
+
+                  <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="ucdistance" role="tabpanel" aria-labelledby="diameter-tab">
+                      <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_DISTANCE">
+                        <input @keyup="ucConvertDistance(name, props.fromMeter)" v-model="ucUnits.distance[name]" type="number" class="form-control">
+                        <label>{{name}} ({{props.symbol}})</label>
+                      </div>
+                    </div>
+                    <div class="tab-pane fade" id="ucweigth" role="tabpanel" aria-labelledby="diameter-tab">
+                      <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_WEIGTH">
+                        <input @keyup="ucConvertWeigth(name, props.fromGram)" v-model="ucUnits.weigth[name]" type="number" class="form-control">
+                        <label>{{name}} ({{props.symbol}})</label>
+                      </div>
+                    </div>
                   </div>
 
                 </div>
@@ -315,7 +334,8 @@
             rMeasuredR:null,
 
             ucUnits:{
-              distance: {}
+              distance: {},
+              weigth:{}
             }
           }
         },
@@ -486,6 +506,16 @@
             });
 
             this.$forceUpdate();
+          },
+          ucConvertWeigth: function(input, convertToGram) {
+            let inMeter = this.ucUnits.weigth[input] * convertToGram;
+
+            Object.entries(this.ucUnits.weigth).forEach(entry => {
+              let [key, value] = entry;
+              this.ucUnits.weigth[key] = inMeter / this.CONVERSION_TABLE_WEIGTH[key].fromGram;
+            });
+
+            this.$forceUpdate();
           }
         },
         beforeMount: function () {
@@ -526,6 +556,24 @@
           Object.entries(this.CONVERSION_TABLE_DISTANCE).forEach(entry => {
             let [key, value] = entry;
             this.ucUnits.distance[key] = null;
+          });
+          this.CONVERSION_TABLE_WEIGTH = {
+            gram: {
+              symbol: "g",
+              fromGram: 1
+            },
+            kilogram: {
+              symbol: "kg",
+              fromGram: 1000
+            },
+            stone: {
+              symbol: "st",
+              fromGram: 6350.29318
+            }
+          };
+          Object.entries(this.CONVERSION_TABLE_WEIGTH).forEach(entry => {
+            let [key, value] = entry;
+            this.ucUnits.weigth[key] = null;
           });
           this.RESISTANCE_PER_METER_TABLE = {
             'aluminium': {
