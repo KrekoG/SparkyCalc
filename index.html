@@ -34,6 +34,9 @@
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="r-tab" data-bs-toggle="tab" data-bs-target="#menu-r" type="button" role="tab" aria-controls="R" aria-selected="false">R</button>
               </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="r-tab" data-bs-toggle="tab" data-bs-target="#menu-conversion" type="button" role="tab" aria-controls="R" aria-selected="false">Unit conversion</button>
+              </li>
             </ul>
 
             <div class="tab-content" id="myTabContent">
@@ -270,6 +273,17 @@
                 </div>
               </div>
 
+              <div class="tab-pane fade show active" id="menu-conversion" role="tabpanel" aria-labelledby="menu-conversion">
+                <div class="container-lg px-4 border bg-light">
+                  <h1>Unit conversion</h1>
+
+                  <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_DISTANCE">
+                    <input @keyup="ucConvertDistance(name, props.fromMeter)" v-model="ucUnits.distance[name]" type="number" class="form-control">
+                    <label for="rCircuitLength">{{name}} ({{props.symbol}})</label>
+                  </div>
+
+                </div>
+              </div>
             </div>
           </div>
           `,
@@ -298,7 +312,11 @@
             rCPCMaterial:"copper",
             rCPCLineConductorCSA:null,
             rCPCCircuitProtectiveConductorCSA:null,
-            rMeasuredR:null
+            rMeasuredR:null,
+
+            ucUnits:{
+              distance: {}
+            }
           }
         },
         computed: {
@@ -458,9 +476,57 @@
           rCPCReset: function() {
             this.rCPCLineConductorCSA = null;
             this.rCPCCircuitProtectiveConductorCSA = null;
+          },
+          ucConvertDistance: function(input, convertToMeter) {
+            let inMeter = this.ucUnits.distance[input] * convertToMeter;
+
+            Object.entries(this.ucUnits.distance).forEach(entry => {
+              let [key, value] = entry;
+              this.ucUnits.distance[key] = inMeter / this.CONVERSION_TABLE_DISTANCE[key].fromMeter;
+            });
+
+            this.$forceUpdate();
           }
         },
         beforeMount: function () {
+          this.CONVERSION_TABLE_DISTANCE = {
+            kilometer: {
+              symbol: "km",
+              fromMeter: 1000
+            },
+            meter: {
+              symbol: "m",
+              fromMeter: 1
+            },
+            centimeter: {
+              symbol: "cm",
+              fromMeter: 0.01
+            },
+            milimeter: {
+              symbol: "mm",
+              fromMeter: 0.001
+            },
+            inch: {
+              symbol: "in",
+              fromMeter: 0.0254
+            },
+            foot: {
+              symbol: "ft",
+              fromMeter: 0.3048
+            },
+            yard: {
+              symbol: "yd",
+              fromMeter: 0.9144
+            },
+            mile: {
+              symbol: "mi",
+              fromMeter: 1609.344
+            }
+          };
+          Object.entries(this.CONVERSION_TABLE_DISTANCE).forEach(entry => {
+            let [key, value] = entry;
+            this.ucUnits.distance[key] = null;
+          });
           this.RESISTANCE_PER_METER_TABLE = {
             'aluminium': {
               '16': {
