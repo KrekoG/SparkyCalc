@@ -301,6 +301,8 @@
                         <input @keyup="ucConvertWeigth(name, props.fromGram)" v-model="ucUnits.weigth[name]" type="number" class="form-control">
                         <label>{{name}} ({{props.symbol}})</label>
                       </div>
+                      <p>(troy) = Troy<br>
+                      (avdp) = Avoirdupois - commonly used in the US</p>
                     </div>
                     <div class="tab-pane fade" id="ucenergy" role="tabpanel" aria-labelledby="energy-tab">
                       <div class="form-floating" v-for="(props, name) in this.CONVERSION_TABLE_ENERGY">
@@ -591,6 +593,30 @@
             stone: {
               symbol: "st",
               fromGram: 6350.29318
+            },
+            "ounce (avdp)": {
+              symbol: "oz",
+              fromGram: 28.34952313
+            },
+            "ounce (troy)": {
+              symbol: "oz",
+              fromGram: 31.1034768
+            },
+            "pound (avdp)": {
+              symbol: "lb",
+              fromGram: 453.59237
+            },
+            "pound (metric)": {
+              symbol: "lb",
+              fromGram: 500
+            },
+            "pound (troy)": {
+              symbol: "lb",
+              fromGram: 373.2417216
+            },
+            carat: {
+              symbol: "ct",
+              fromGram: 0.2
             }
           };
           Object.entries(this.CONVERSION_TABLE_WEIGTH).forEach(entry => {
