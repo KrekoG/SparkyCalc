@@ -41,51 +41,64 @@
                 <div class="container-lg px-4 border bg-light">
                   <h1>Luminaire position calculator</h1>
                   <div class="form-floating">
-                    <input id="fullLength" type="number" v-model="fullLength" class="form-control" placeholder="Room length">
-                    <label for="fullLength">Room length</label>
-                  </div>
-                  <div class="form-floating">
                     <input id="numberOfLuminaires" type="number" v-model="numberOfLuminaires" class="form-control" placeholder="Number of Luminaires">
                     <label for="numberOfLuminaires">Number of Luminaires</label>
                   </div>
                   <div class="form-floating">
+                    <select v-model="lumUnit" class="form-select" aria-label="Default select example">
+                      <option value="mm" selected>milimeter</option>
+                      <option value="cm" selected>centimeter</option>
+                      <option value="m">meter</option>
+                      <option value="km">kilometer</option>
+                      <option value="in">inch</option>
+                      <option value="ft">foot</option>
+                      <option value="yd">yard</option>
+                      <option value="mi">mile</option>
+                    </select>
+                    <label for="lineconductor">Unit of distance</label>
+                  </div>
+                  <div class="form-floating">
+                    <input id="fullLength" type="number" v-model="fullLength" class="form-control" placeholder="Room length">
+                    <label for="fullLength">Room length in {{lumUnit}}</label>
+                  </div>
+                  <div class="form-floating">
                     <input id="offsetFromLeft" type="number" v-model="offsetFromLeft" default="0" :disabled="forcedLeft > 0" class="form-control" placeholder="Offset from left">
-                    <label for="offseoffsetFromLefttLeft">Offset from left</label>
+                    <label for="offseoffsetFromLefttLeft">Offset from left in {{lumUnit}}</label>
                   </div>
                   <div class="form-floating">
                     <input id="offsetFromRight" type="number" v-model="offsetFromRight" default="0" :disabled="forcedRight > 0" class="form-control" placeholder="Offset from right">
-                    <label for="offsetFromRight">Offset from right</label>
+                    <label for="offsetFromRight">Offset from right in {{lumUnit}}</label>
                   </div>
                   <div class="form-floating">
                     <input id="forcedLeft" type="number" v-model="forcedLeft" default="0" :disabled="offsetFromLeft > 0" class="form-control" placeholder="Force position of first from left side">
-                    <label for="forcedLeft">Force position of first from left side</label>
+                    <label for="forcedLeft">Force position of first from left side in {{lumUnit}}</label>
                   </div>
                   <div class="form-floating">
                     <input id="forcedRight" type="number" v-model="forcedRight" default="0" :disabled="offsetFromRight > 0" class="form-control" placeholder="Force position of first from right side">
-                    <label for="forcedRight">Force position of first from right side</label>
+                    <label for="forcedRight">Force position of first from right side in {{lumUnit}}</label>
                   </div>
                   <div v-if="numberOfLuminaires && fullLength">
                     <h2>Luminaire positions</h2>
                     <ul class="list-group text-center">
-                      <li class="list-group-item">|--<span v-for="distance in distanceList">{{Math.round((distance.distance + Number.EPSILON) * 100) / 100}}<span v-if="distance.index != Object.keys(distanceList).length">--⮾--</span></span>--|</li>
+                      <li class="list-group-item">|--<span v-for="distance in distanceList">{{Math.round((distance.distance + Number.EPSILON) * 100) / 100}} {{lumUnit}}<span v-if="distance.index != Object.keys(distanceList).length">--⮾--</span></span>--|</li>
                     </ul>
                     <div v-if="offsetFromLeft < 1 && offsetFromRight < 1 && !forcedLeft && !forcedRight">
                       <h4>Luminaire positions with laser measuring tool</h4>
                       <ul v-for="position in positions" class="list-group">
-                        <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}}</li>
+                        <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                       </ul>
                     </div>
                     <div v-else>
                       <div>
                         <h4>Luminaire positions with laser measuring tool from the left</h4>
                         <ul v-for="position in positions" class="list-group">
-                          <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}}</li>
+                          <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                         </ul>
                       </div>
                       <div>
                         <h4>Luminaire positions with laser measuring tool from the right:</h4>
                         <ul v-for="position in positionsFromTheRight" class="list-group">
-                          <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}}</li>
+                          <li class="list-group-item">{{position.index + 1}}. {{Math.round((position.position + Number.EPSILON) * 100) / 100}} {{lumUnit}}</li>
                         </ul>
                       </div>
                     </div>
@@ -262,6 +275,7 @@
           `,
         data() {
           return {
+            lumUnit:"mm",
             fullLength: null,
             numberOfLuminaires: null,
             offsetFromLeft: null,
